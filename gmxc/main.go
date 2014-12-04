@@ -16,7 +16,8 @@ var (
 	delay    = flag.Duration("d", 0, "delay between updates")
 	duration = flag.Duration("D", 0, "duration to output continually")
 
-	pid = flag.Int("p", 0, "process to inspect")
+	pid   = flag.Int("p", 0, "process to inspect")
+	pname = flag.String("n", "", "name of process to inspec")
 
 	socketregex = regexp.MustCompile(`\.gmx\.[0-9]+\.0`)
 )
@@ -65,6 +66,43 @@ func listGmxProcesses() {
 	}
 }
 
+func findGmxProcess(pname string) int {
+	dir, err := os.Open(os.TempDir())
+	if err != nil {
+		log.Fatalf("unable to open %s: %v", os.TempDir(), err)
+	}
+	pids, err := dir.Readdirnames(0)
+	if err != nil {
+		log.Fatalf("unable to read pids: %v", err)
+	}
+	for _, pid := range pids {
+		if socketregex.MatchString(pid) {
+			c, err := dial(filepath.Join(os.TempDir(), pid))
+			if err != nil {
+				continue
+			}
+			defer c.Close()
+			c.Encode([]string{"os.args"})
+			var result = make(map[string]interface{})
+			if err := c.Decode(&result); err != nil {
+				log.Printf("unable to decode response from %s: %v", pid, err)
+				continue
+			}
+			if raw_args, ok := result["os.args"]; ok {
+				if args, ok := raw_args.([]string); ok {
+					fmt.Printf("%s\t%v\n", pid, args)
+					if len(args) >= 1 && args[0] == pname {
+						var numeric_pid int
+						fmt.Sscanf(".gmx.%d.0", pid, &numeric_pid)
+						return numeric_pid
+					}
+				}
+			}
+		}
+	}
+	return 0
+}
+
 // fetchKeys returns all the registered keys from the process.
 func fetchKeys(c *conn) []string {
 	// retrieve list of registered keys
@@ -84,6 +122,9 @@ func fetchKeys(c *conn) []string {
 
 func main() {
 	flag.Parse()
+	if *pid == 0 && *pname != "" {
+		*pid = findGmxProcess(*pname)
+	}
 	if *pid == 0 {
 		listGmxProcesses()
 		return
