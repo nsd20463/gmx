@@ -151,8 +151,10 @@ func main() {
 		if err := c.Decode(&result); err != nil {
 			log.Fatalf("unable to decode response: %v", err)
 		}
-		for k, v := range result {
-			fmt.Printf("%s: %v\n", k, v)
+		for _,k := range keys {
+			if v, ok := result[k]; ok {
+				fmt.Printf("%s: %v\n", k, v)
+			}
 		}
 		if time.Now().After(deadline) {
 			return
