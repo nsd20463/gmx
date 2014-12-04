@@ -160,5 +160,6 @@ func main() {
 			return
 		}
 		time.Sleep(*delay)
+		fmt.Println("----") // separator line
 	}
 }
