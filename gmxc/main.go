@@ -38,7 +38,7 @@ func dial(addr string) (*conn, error) {
 	}, err
 }
 
-func listGmxProcesses() {
+func listGmxProcesses(f func(file string, args interface{})) {
 	dir, err := os.Open(os.TempDir())
 	if err != nil {
 		log.Fatalf("unable to open %s: %v", os.TempDir(), err)
@@ -61,50 +61,36 @@ func listGmxProcesses() {
 				continue
 			}
 			if args, ok := result["os.args"]; ok {
-				fmt.Printf("%s\t%v\n", pid, args)
+				f(pid, args)
 			}
 		}
 	}
 }
 
 func findGmxProcess(pname string) int {
-	dir, err := os.Open(os.TempDir())
-	if err != nil {
-		log.Fatalf("unable to open %s: %v", os.TempDir(), err)
-	}
-	pids, err := dir.Readdirnames(0)
-	if err != nil {
-		log.Fatalf("unable to read pids: %v", err)
-	}
-	for _, pid := range pids {
-		if socketregex.MatchString(pid) {
-			c, err := dial(filepath.Join(os.TempDir(), pid))
-			if err != nil {
-				continue
-			}
-			defer c.Close()
-			c.Encode([]string{"os.args"})
-			var result = make(map[string]interface{})
-			if err := c.Decode(&result); err != nil {
-				log.Printf("unable to decode response from %s: %v", pid, err)
-				continue
-			}
-			if args, ok := result["os.args"]; ok {
-				if argslist, ok := args.([]interface{}); ok && len(argslist) >= 1 {
-					name, ok := argslist[0].(string)
-					if ok {
-						if  name == pname {
-							str := pid[5:len(pid)-2]
-							numeric_pid, err := strconv.Atoi(str)
-							if err == nil {
-								fmt.Printf("Using %s\t%v\n", pid, args)
-								return int(numeric_pid)
-							}
+	var found int
+	listGmxProcesses(func(file string, args interface{}) {
+		if argslist, ok := args.([]interface{}); ok && len(argslist) >= 1 {
+			name, ok := argslist[0].(string)
+			if ok {
+				if name == pname {
+					str_pid := file[5 : len(file)-2] // ".gmx.####.0"
+					numeric_pid, err := strconv.Atoi(str_pid)
+					if err == nil {
+						if found == 0 {
+							fmt.Printf("Using %s\t%v\n", name, args)
+							found = numeric_pid
+						} else if found > 0 {
+							fmt.Printf("Ambiguous situation. Both %d and %d could be %s. Use -p option\n", found, numeric_pid, pname)
+							found = -1
 						}
 					}
 				}
 			}
 		}
+	})
+	if found > 0 {
+		return found
 	}
 	return 0
 }
@@ -132,7 +118,7 @@ func main() {
 		*pid = findGmxProcess(*pname)
 	}
 	if *pid == 0 {
-		listGmxProcesses()
+		listGmxProcesses(func(name string, args interface{}) { fmt.Printf("%s\t%v\n", name, args) })
 		return
 	}
 	c, err := dial(filepath.Join(os.TempDir(), fmt.Sprintf(".gmx.%d.0", *pid)))
