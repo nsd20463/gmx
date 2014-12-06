@@ -1,6 +1,7 @@
 package gmx
 
 import (
+	"fmt"
 	"sync/atomic"
 )
 
@@ -10,6 +11,10 @@ type Counter struct {
 
 func (c *Counter) Inc() {
 	atomic.AddUint64(&c.value, 1)
+}
+
+func (c Counter) String() string {
+	return fmt.Sprintf("%u", c.value)
 }
 
 func NewCounter(name string) *Counter {
@@ -30,6 +35,10 @@ func (g *Gauge) Inc() {
 
 func (g *Gauge) Dec() {
 	atomic.AddInt64(&g.value, -1)
+}
+
+func (g Gauge) String() string {
+	return fmt.Sprintf("%d", g.value)
 }
 
 func NewGauge(name string) *Gauge {
