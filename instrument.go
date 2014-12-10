@@ -17,6 +17,10 @@ func (c Counter) String() string {
 	return fmt.Sprintf("%u", c.value)
 }
 
+func (c Counter) Value() uint64 {
+	return c.value
+}
+
 func NewCounter(name string) *Counter {
 	c := new(Counter)
 	Publish(name, func() interface{} {
@@ -39,6 +43,10 @@ func (g *Gauge) Dec() {
 
 func (g Gauge) String() string {
 	return fmt.Sprintf("%d", g.value)
+}
+
+func (g Gauge) Value() int64 {
+	return g.value
 }
 
 func NewGauge(name string) *Gauge {
