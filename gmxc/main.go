@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -109,6 +110,7 @@ func fetchKeys(c *conn) []string {
 	if !ok {
 		log.Fatalf("gmx server did not return a keys list")
 	}
+	sort.Strings(keys)
 	return keys
 }
 
