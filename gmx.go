@@ -17,6 +17,8 @@ var (
 	r = &registry{
 		entries: make(map[string]func() interface{}),
 	}
+
+	localsocket net.Listener
 )
 
 func init() {
@@ -31,6 +33,7 @@ func init() {
 		return r.keys()
 	})
 	go serve(s, r)
+	localsocket = s
 }
 
 func localSocket() (net.Listener, error) {
@@ -49,13 +52,16 @@ func Publish(key string, f func() interface{}) {
 	r.register(key, f)
 }
 
-func serve(l net.Listener, r *registry) {
-	// if listener is a unix socket, try to delete it on shutdown
-	if l, ok := l.(*net.UnixListener); ok {
-		if a, ok := l.Addr().(*net.UnixAddr); ok {
-			defer os.Remove(a.Name)
-		}
+// Exit cleanly shuts down gmx.
+// This is useful as a defer'ed function in main(), so the local gmx socket is cleaned up
+func Exit() {
+	if localsocket != nil {
+		localsocket.Close()
+		localsocket = nil
 	}
+}
+
+func serve(l net.Listener, r *registry) {
 	defer l.Close()
 	for {
 		c, err := l.Accept()
