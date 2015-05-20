@@ -2,12 +2,9 @@ package gmx
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net"
-	"os"
-	"path/filepath"
 	"sync"
 )
 
@@ -34,17 +31,6 @@ func init() {
 	})
 	go serve(s, r)
 	localsocket = s
-}
-
-func localSocket() (net.Listener, error) {
-	return net.ListenUnix("unix", localSocketAddr())
-}
-
-func localSocketAddr() *net.UnixAddr {
-	return &net.UnixAddr{
-		filepath.Join(os.TempDir(), fmt.Sprintf(".gmx.%d.%d", os.Getpid(), GMX_VERSION)),
-		"unix",
-	}
 }
 
 // Publish registers the function f with the supplied key.

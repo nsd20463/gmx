@@ -30,15 +30,6 @@ type conn struct {
 	*json.Encoder
 }
 
-func dial(addr string) (*conn, error) {
-	c, err := net.Dial("unix", addr)
-	return &conn{
-		c,
-		json.NewDecoder(c),
-		json.NewEncoder(c),
-	}, err
-}
-
 func listGmxProcesses(f func(file string, args interface{})) {
 	dir, err := os.Open(os.TempDir())
 	if err != nil {
@@ -153,7 +144,7 @@ func main() {
 		if err := c.Decode(&result); err != nil {
 			log.Fatalf("unable to decode response: %v", err)
 		}
-		for _,k := range keys {
+		for _, k := range keys {
 			if v, ok := result[k]; ok {
 				fmt.Printf("%s: %v\n", k, v)
 			}
