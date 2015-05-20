@@ -1,4 +1,4 @@
-// +build: windows
+// +build windows
 
 package gmx
 
@@ -12,7 +12,7 @@ import (
 func localSocket() (net.Listener, error) {
 	listener, err := net.ListenTCP("tcp", localSocketAddr())
 	if err == nil {
-		addr, ok := listener.Addr().(net.TCPAddr)
+		_, ok := listener.Addr().(net.Addr)
 		if ok {
 			fmt.Println("Listening at ", listener.Addr().String())
 		}
