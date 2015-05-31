@@ -100,22 +100,23 @@ type registry struct {
 
 func (r *registry) register(key string, f func() interface{}) {
 	r.Lock()
-	defer r.Unlock()
 	r.entries[key] = f
+	r.Unlock()
 }
 
 func (r *registry) value(key string) (func() interface{}, bool) {
 	r.Lock()
-	defer r.Unlock()
 	f, ok := r.entries[key]
+	r.Unlock()
 	return f, ok
 }
 
-func (r *registry) keys() (k []string) {
+func (r *registry) keys() []string {
 	r.Lock()
-	defer r.Unlock()
+	var k = make([]string, len(r.entries))
 	for e := range r.entries {
 		k = append(k, e)
 	}
-	return
+	r.Unlock()
+	return k
 }
