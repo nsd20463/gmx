@@ -14,17 +14,17 @@ func (c *Counter) Inc() {
 }
 
 func (c Counter) String() string {
-	return fmt.Sprintf("%u", c.value)
+	return fmt.Sprintf("%u", c.Value())
 }
 
 func (c Counter) Value() uint64 {
-	return c.value
+	return atomic.LoadUint64(&c.value)
 }
 
 func NewCounter(name string) *Counter {
 	c := new(Counter)
 	Publish(name, func() interface{} {
-		return c.value
+		return c.Value()
 	})
 	return c
 }
@@ -42,17 +42,17 @@ func (g *Gauge) Dec() {
 }
 
 func (g Gauge) String() string {
-	return fmt.Sprintf("%d", g.value)
+	return fmt.Sprintf("%d", g.Value())
 }
 
 func (g Gauge) Value() int64 {
-	return g.value
+	return atomic.LoadInt64(&g.value)
 }
 
 func NewGauge(name string) *Gauge {
 	g := new(Gauge)
 	Publish(name, func() interface{} {
-		return g.value
+		return g.Value()
 	})
 	return g
 }
