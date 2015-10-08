@@ -106,6 +106,13 @@ func fetchKeys(c *conn) []string {
 }
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintln(os.Stderr, "Usage:")
+		fmt.Fprintf(os.Stderr, "  %s [OPTIONS] [REGEX PATTERN]*\n", os.Args[0])
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "Options:")
+		flag.PrintDefaults()
+	}
 	flag.Parse()
 	if *pid == 0 && *pname != "" {
 		*pid = findGmxProcess(*pname)
