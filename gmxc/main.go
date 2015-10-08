@@ -123,14 +123,19 @@ func main() {
 	// match flag.Args() as regexps
 	registeredKeys := fetchKeys(c)
 	var keys []string
-	for _, a := range flag.Args() {
-		r, err := regexp.Compile(a)
-		if err != nil {
-			log.Fatal("unable to compile regex %v: %v", a, err)
-		}
-		for _, k := range registeredKeys {
-			if r.MatchString(k) {
-				keys = append(keys, k)
+	if len(flag.Args()) == 0 {
+		// no patterns? then you get everything
+		keys = registeredKeys
+	} else {
+		for _, a := range flag.Args() {
+			r, err := regexp.Compile(a)
+			if err != nil {
+				log.Fatal("unable to compile regex %v: %v", a, err)
+			}
+			for _, k := range registeredKeys {
+				if r.MatchString(k) {
+					keys = append(keys, k)
+				}
 			}
 		}
 	}
