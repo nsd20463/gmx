@@ -21,7 +21,7 @@ var (
 	pid   = flag.Int("p", 0, "process to inspect")
 	pname = flag.String("n", "", "name of process to inspect")
 
-	socketregex = regexp.MustCompile(`\.gmx\.[0-9]+\.0`)
+	socketregex = regexp.MustCompile(`\.gmx\.[0-9]+\.[0-9]+`)
 )
 
 type conn struct {
@@ -65,8 +65,8 @@ func findGmxProcess(pname string) int {
 		if argslist, ok := args.([]interface{}); ok && len(argslist) >= 1 {
 			name, ok := argslist[0].(string)
 			if ok {
-				if name == pname {
-					str_pid := file[5 : len(file)-2] // ".gmx.####.0"
+				if filepath.Base(name) == pname {
+					str_pid := file[5 : len(file)-2] // ".gmx.####.#"
 					numeric_pid, err := strconv.Atoi(str_pid)
 					if err == nil {
 						if found == 0 {
