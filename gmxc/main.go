@@ -19,7 +19,7 @@ var (
 	duration = flag.Duration("D", 0, "duration to output continually")
 
 	pid   = flag.Int("p", 0, "process to inspect")
-	pname = flag.String("n", "", "name of process to inspec")
+	pname = flag.String("n", "", "name of process to inspect")
 
 	socketregex = regexp.MustCompile(`\.gmx\.[0-9]+\.0`)
 )
