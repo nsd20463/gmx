@@ -7,23 +7,17 @@ import (
 	"net"
 	"os"
 	"path/filepath"
-
-	"log"
 )
 
 func localSocket() (net.Listener, error) {
-	return net.ListenUnix("unix", localSocketAddr())
+	addr := localSocketAddr()
+	os.Remove(addr.Name) // clear out any leftover use of our filename (it has our PID in it, so I feel no pity)
+	return net.ListenUnix("unit", addr)
 }
 
 func localSocketAddr() *net.UnixAddr {
-	gmxFilePath := filepath.Join(os.TempDir(), fmt.Sprintf(".gmx.%d.%d", os.Getpid(), GMX_VERSION))
-	if _, err := os.Stat(gmxFilePath); err == nil {
-		log.Printf("File %s already exists, deleting it before creating another\n", gmxFilePath)
-		err = os.Remove(gmxFilePath)
-		log.Printf("Unable to delete file %s. Error: %q\n", gmxFilePath, err)
-	}
 	return &net.UnixAddr{
-		gmxFilePath,
-		"unix",
+		Name: filepath.Join(os.TempDir(), fmt.Sprintf(".gmx.%d.%d", os.Getpid(), GMX_VERSION)),
+		Net:  "unix",
 	}
 }
