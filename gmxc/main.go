@@ -127,6 +127,9 @@ func main() {
 	}
 	defer c.Close()
 
+	// have JSON decoder preserve large integers as themselves, rather than convert to float64 and loose precision
+	c.UseNumber()
+
 	// match flag.Args() as regexps
 	registeredKeys := fetchKeys(c)
 	var keys []string
