@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"log"
+	"math"
 	"net"
 	"sync"
 )
@@ -83,7 +84,18 @@ func handle(nc net.Conn, reg *registry) {
 		for _, key := range keys {
 			if f, ok := reg.value(key); ok {
 				// invoke the function for key and store the result
-				result[key] = f()
+				val := f()
+				if val == nil {
+					continue
+				}
+				switch val.(type) {
+				case float64:
+					if math.IsNaN(val.(float64)) {
+						log.Printf("gmx: Got NaN for %s", key)
+						continue
+					}
+				}
+				result[key] = val
 			}
 		}
 		if err := c.Encode(result); err != nil {
