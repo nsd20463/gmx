@@ -38,6 +38,11 @@ func Publish(key string, f func() interface{}) {
 	r.register(key, f)
 }
 
+// Unpublish unregisters the key. If key is not currently registered it does nothing.
+func Unpublish(key string) {
+	r.unregister(key)
+}
+
 // Exit cleanly shuts down gmx.
 // This is useful as a defer'ed function in main(), so the local gmx socket is cleaned up
 func Exit() {
@@ -101,6 +106,12 @@ type registry struct {
 func (r *registry) register(key string, f func() interface{}) {
 	r.Lock()
 	r.entries[key] = f
+	r.Unlock()
+}
+
+func (r *registry) unregister(key string) {
+	r.Lock()
+	delete(r.entries, key)
 	r.Unlock()
 }
 
