@@ -94,10 +94,13 @@ func handle(nc net.Conn, reg *registry) {
 				if val == nil {
 					continue
 				}
-				switch val.(type) {
+				switch v := val.(type) {
 				case float64:
-					if math.IsNaN(val.(float64)) {
-						log.Printf("gmx: Got NaN for %s", key)
+					if math.IsNaN(v) {
+						continue
+					}
+				case float32:
+					if math.IsNaN(float64(v)) {
 						continue
 					}
 				}
