@@ -96,11 +96,14 @@ func handle(nc net.Conn, reg *registry) {
 				}
 				switch v := val.(type) {
 				case float64:
-					if math.IsNaN(v) {
+					if math.IsNaN(v) || math.IsInf(v, 0) {
+						// JSON cannot encode NaN, nor Inf. We either skip this metric or
+						// convert it to a string. For now I skip it to not cause num->string
+						// surprises at the receiving side.
 						continue
 					}
 				case float32:
-					if math.IsNaN(float64(v)) {
+					if math.IsNaN(float64(v)) || math.IsInf(float64(v), 0) {
 						continue
 					}
 				}
