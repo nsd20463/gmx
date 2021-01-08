@@ -84,7 +84,7 @@ func handle(nc net.Conn, reg *registry) {
 			}
 			return
 		}
-		var result = make(map[string]interface{})
+		var result = make(map[string]interface{}, len(keys))
 		for _, key := range keys {
 			if f, ok := reg.value(key); ok {
 				// invoke the function for key and store the result
@@ -124,7 +124,7 @@ func (r *registry) value(key string) (func() interface{}, bool) {
 
 func (r *registry) keys() []string {
 	r.Lock()
-	var k = make([]string, len(r.entries))
+	var k = make([]string, 0, len(r.entries))
 	for e := range r.entries {
 		k = append(k, e)
 	}
