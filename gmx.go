@@ -75,6 +75,7 @@ func handle(nc net.Conn, reg *registry) {
 		json.NewEncoder(nc),
 		json.NewDecoder(nc),
 	}
+	c.SetEscapeHTML(false) // I hate that default
 	defer c.Close()
 	for {
 		var keys []string
