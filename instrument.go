@@ -14,7 +14,7 @@ func (c *Counter) Inc() {
 }
 
 func (c Counter) String() string {
-	return fmt.Sprintf("%u", c.Value())
+	return fmt.Sprintf("%d", c.Value())
 }
 
 func (c Counter) Value() uint64 {
